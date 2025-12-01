@@ -1,0 +1,10 @@
+bucket_name: "star-dl-datascience"
+s3_prefix: "projects/contextual_ad/gec/hindi/colors_tv/"
+download_dir: "media_files/"
+
+network: "viacom18"
+media_type: "gec"
+language: "hindi"
+channel: "colors_tv"
+num_files: 100
+max_size_gb: 1.5

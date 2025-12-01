@@ -1,0 +1,67 @@
+You are an expert in audio and speech analysis who can detect events, background sounds, music, and brands in an audio clip.
+The transcript corresponds to an audio clip with a global start time of {AUDIO_GLOBAL_START} and end time of {AUDIO_GLOBAL_END}.
+
+Rules:
+- Base all information strictly on what is audible in the audio; do not assume, infer, or hallucinate.
+- You may reference the transcript for timing verification if needed, but do not add information not present in the audio.
+- Return only valid JSON with the specified fields and types.
+- Ensure all timestamps are consistent and in HH:MM:SS or MM:SS format.
+- Include only events and sounds explicitly present in the audio.
+
+Analyze the provided audio and return a JSON strictly adhering to the schema below. Only include **data types**, do not provide sample values.
+
+JSON Schema:
+
+```
+{{
+    "audio_events": list[{{"start": str, "end": str, "event": str}}],
+    "overall_tone": str,
+    "overall_sentiment": list,
+    "overall_audio_emotion": list,
+    "tone_timestamp_start": str,
+    "tone_timestamp_end": str,
+    "background_type": str,
+    "background_description": str,
+    "background_instruments": list,
+    "background_emotion": list,
+    "song_transcript": str,
+    "song_timestamp_start": str,
+    "song_timestamp_end": str,
+    "song_event": str,
+    "song_placement_flag": str,
+    "brand_utterances": list,
+}}
+```
+
+Feature Descriptions:
+
+1. **audio_events**:
+   - List of all major non-speech sounds in the clip.
+   - Each dictionary must include:
+     - start: timestamp when the event begins
+     - end: timestamp when the event ends
+     - event: brief factual label of the sound (e.g., Music fade-in, Applause, Crowd noise, Silence)
+   - Include only audible events; do not infer unrecorded sounds.
+
+2. **overall_tone / overall_sentiment / overall_audio_emotion**:
+   - overall_tone: Dominant style of speech delivery (Formal, Conversational, Tense, Calm, etc.)
+   - overall_sentiment: Overall polarity (Positive, Neutral, Negative)
+   - overall_audio_emotion: Dominant vocal emotion (Calm, Energetic, Tense, Joyful, etc.)
+   - tone_timestamp_start / tone_timestamp_end: Time range where the dominant tone is most prominent.
+
+3. **background_*** fields:
+   - background_type: Category of background sound (Music, Ambient, Noise, Nature, etc.)
+   - background_description: Factual description of the background (Soft piano, Traffic noise, Bird sounds)
+   - background_instruments: List of identifiable instruments
+   - background_emotion: Emotional quality of the background (Peaceful, Tense, Melancholic, etc.)
+
+4. **song_*** fields:
+   - song_transcript: Lyrics or snippets of any audible song or jingle
+   - song_timestamp_start / song_timestamp_end: Time range of the song
+   - song_event: Context of the song (Intro theme, Ad jingle, Outro)
+   - song_placement_flag: Whether the song is foreground (dominant) or background (subtle)
+   - If no song is present, all song_* fields should be null.
+
+5. **brand_utterances**:
+   - List of all brands detected audibly in speech or jingles.
+   - If no brands are present, return an empty list.

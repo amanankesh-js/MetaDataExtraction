@@ -1,0 +1,10 @@
+bucket_name: "star-dl-datascience"
+s3_prefix: "projects/contextual_ad/gec/hindi/star_plus/hd/"
+download_dir: "media_files/"
+
+network: "star"
+media_type: "gec"
+language: "hindi"
+channel: "star_plus"
+num_files: 100
+max_size_gb: 1.5

@@ -1,0 +1,13 @@
+bucket_name: "star-dl-datascience"
+s3_prefix: "projects/contextual_ad/colors_cineplex/hindi/movie_files/"
+download_dir: "media_files/"
+download_log: "metadata/download_log/"
+infer_meta: "metadata/inference_tracker/"
+
+
+network: "viacom18"
+media_type: "movies"
+language: "hindi"
+channel: Null
+num_files: 100
+max_size_gb: 4

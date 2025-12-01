@@ -1,0 +1,63 @@
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Logs
+logs/
+*.log
+
+# Build / Cache
+build/
+dist/
+*.egg-info/
+
+# Images
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.gif
+*.tiff
+*.svg
+*.webp
+
+# Videos
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.wmv
+*.flv
+*.mpeg
+*.mpg
+*.m4v
+
+# Audio
+*.mp3
+*.wav
+*.aac
+*.flac
+*.m4a
+*.ogg
+*.wma
+
+# Subtitles / captions
+*.srt
+*.vtt
+
+# Big datasets
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+output/
+volumes/

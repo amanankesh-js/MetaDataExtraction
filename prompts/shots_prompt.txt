@@ -1,0 +1,51 @@
+
+You are given frame-level descriptions of a video shot.
+
+Notes:
+- 1 description per second
+- One 5-second content summary & translation is present for every 5-second block
+
+SHOT TEXT:
+{{shots_text}}
+
+Your task:
+1. Summarize the entire shot in 2–3 crisp lines capturing the core event and context.
+2. Describe the shot as a natural flowing story — not timestamps, not a list.
+3. Mention who is speaking, what they are saying (if available), and key actions.
+4. Include emotions, expressions, gestures, and interpersonal dynamics between characters.
+
+Return JSON only in the following format (no additional text):
+
+{{
+    "character_names": `list`,
+    "character_appearances": `dict{character_name: character_appearance}`,
+    "character_emotions": `dict{character_name: character_emotion}`,
+    "shot_summary": "",
+    "shot_description": ""
+}}
+
+-------------------------
+ATTRIBUTE DEFINITIONS
+-------------------------
+character_names:
+- List of unique characters appearing in the shot (real names if known; otherwise infer identifiers like "Man 1", "Woman 2", etc.)
+
+character_appearances:
+- For each character, describe their visual identifiers such as clothing, age range, hairstyle, build, or accessories
+
+character_emotions:
+- For each character, describe their emotional state + facial/body expressions + tone shown in the shot
+
+shot_summary:
+- A short 2–3 line overview that captures the main event or interaction in the shot without details
+
+shot_description:
+- A complete story-style narrative of the shot including actions, interactions, dialogues (if available), emotions, atmosphere, and character dynamics — no timestamps, no bullet points
+
+-------------------------
+RULES
+-------------------------
+- Maintain the same character order across names, appearances, and emotions
+- Avoid hallucination; infer only from available information
+- Do not include timestamps, subtitles, or frame references
+- Output must be ONLY the JSON object above

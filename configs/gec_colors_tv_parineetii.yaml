@@ -1,0 +1,12 @@
+BUCKET_NAME: "star-dl-datascience"
+S3_PREFIX: "projects/contextual_ad/gec/hindi/colors_tv/hd/"
+DOWNLOAD_DIR: "media_files/"
+NETWORK: "viacom18"
+DOWNLOAD_LOG: "metadata/download_log/colors_tv"
+INFER_META: "metadata/inference_tracker/colors_tv"
+
+MEDIA_TYPE: "gec"
+LANGUAGE: "hindi"
+CHANNEL_NAME: "colors_tv"
+NUM_FILES: 10
+MAX_SIZE_GB: 1.5

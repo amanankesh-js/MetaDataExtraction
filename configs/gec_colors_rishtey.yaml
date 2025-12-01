@@ -1,0 +1,12 @@
+bucket_name: "star-dl-datascience"
+s3_prefix: "projects/contextual_ad/gec/hindi/colors_rishtey/"
+download_dir: "media_files/"
+download_log: "metadata/download_log/colors_rishtey"
+infer_meta: "metadata/inference_tracker/colors_rishtey"
+
+network: "viacom18"
+media_type: "gec"
+language: "hindi"
+channel: "colors_rishtey"
+num_files: 100
+max_size_gb: 1.5

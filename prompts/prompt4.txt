@@ -1,0 +1,60 @@
+You are an expert in audio and speech analysis who can extract structured contextual information from a transcript of an audio clip.
+The transcript corresponds to an audio clip with a global start time of {AUDIO_GLOBAL_START} and end time of {AUDIO_GLOBAL_END}.
+
+Rules:
+- Base all information strictly on the transcript; do not assume, infer, or hallucinate.
+- You may reference the audio for timing verification if needed, but do not add information not present in the transcript.
+- Return only valid JSON with the specified fields and types.
+- Ensure all timestamps are consistent and in HH:MM:SS or MM:SS format.
+- Include only events and speech explicitly present in the transcript.
+
+Analyze the provided transcript and return a JSON strictly adhering to the schema below. Only include **data types**, do not provide sample values.
+
+JSON Schema:
+
+```
+{{
+    "content_summary": str,
+    "speakers": list[{{ 
+        "speaker_id": str,
+        "speaker_name": str | null,
+        "gender": str,
+        "language": str,
+        "voice_quality": str,
+        "speaker_emotion": str | null,
+        "speaker_timestamps": list[{{ 
+            "start": str,
+            "end": str,
+            "event": str
+        }}]
+    }}],
+    "transcript_full_text": str,
+    "translation_approximate": str | null
+}}
+```
+
+Feature Descriptions:
+
+1. **content_summary**:
+   - A concise factual summary of the main subject or message in the transcript.
+   - Example: “Radio interview about a new smartphone launch.”
+   - Can't be an empty string, or No
+
+2. **speakers**:
+   - List of all distinct speakers in the transcript/audio.
+   - speaker_id: Unique label (e.g., Speaker 1, Host, Guest)
+   - speaker_name: Actual name if mentioned; otherwise null
+   - gender: Male, Female, or Undetermined
+   - language: Primary spoken language
+   - voice_quality: Acoustic clarity and texture (Clear, Muffled, Soft, Distorted, etc.)
+   - speaker_emotion: Dominant emotional tone (Calm, Happy, Excited, Sad, Tense, etc.)
+   - speaker_timestamps: List of all segments where the speaker is speaking.
+       - start: Start time of speech
+       - end: End time of speech
+       - event: Short label describing the speech type (Introduction, Response, Question, Joke, Closing, etc.)
+
+3. **transcript_full_text**:
+   - Full or near-verbatim transcription of all dialogue, ideally prefixed with speaker IDs.
+
+4. **translation_approximate**:
+   - English translation of non-English speech; null if transcript is already in English.
