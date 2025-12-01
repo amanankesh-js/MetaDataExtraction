@@ -10,7 +10,22 @@ enqueue_jobs ---- enqueue_jobs to the pipeline table
 download_stage
 |
 |
-inferfence_stage
+character detection
+|
+|
+inference_stage
+|
+|
+shot_detection
+|
+|
+shot_description
+|
+|
+scene_detection
+|
+|
+scene_description
 |
 |
 db_insertion_stage
