@@ -3,20 +3,20 @@ import time
 from utils.download import download_s3_file, download_local_file
 
 from utils.job_queue import update_job_stage, fetch_next_job, mark_job_failed
-from config import LOCAL_VIDEO_DIR, SLEEP_DURATION, DEBUG_MODE
+from config import LOCAL_VIDEO_DIR, SLEEP_DURATION, DEBUG_MODE, SCENE_THRESHOLD, CHUNK_DURATION
 from utils.aud_db_utils import get_pg_conn
 from utils.video_utils import split_video
-
+from utils.detect_shots import detect_and_split_shots
 conn = get_pg_conn()
 debug = DEBUG_MODE
 sleep_time = SLEEP_DURATION
 
-status = "failed"
+status = "pending"
 local_base_dir = LOCAL_VIDEO_DIR
 
 i = 0
 while True:
-    job = fetch_next_job(conn, 'download', status=status) 
+    job = fetch_next_job(conn, 'download', status=status) # instead of fetching one job at a time, we can fetch multiple jobs and process in parallel
     
     if job:
         try:
@@ -27,20 +27,26 @@ while True:
             print("config : ", new_filename, "\n")
 
             local_dir = os.path.join(config['download_dir'], config['network'], config['media_type'], config['language'], config['channel'] if config['channel'] is not None else '')
-            # local_path = download_s3_file('star-dl-datascience', s3_key, local_dir, new_filename, config['download_dir'])
-            
+ 
             print(s3_key, local_dir, new_filename, config['download_dir'])
             local_path = download_local_file(local_base_dir, s3_key, local_dir, new_filename, config['download_dir'])
+            download_time = time.time() - start
+
             if local_path:
-                split_video(local_path, local_dir, split_duration=5)
+                ### these two functions can be run parallelly
+                start = time.time()
+                split_video(local_path, local_dir, split_duration=CHUNK_DURATION)
+                spliting_time = time.time() - start
+                detect_and_split_shots(video_path=local_path, threshold=SCENE_THRESHOLD)
+                shot_detection_time = time.time() - spliting_time
             else:
                 print("\nlocal_path : ", local_path,"\n")
+                raise ValueError("Download returned no local_path")
 
-            download_time = time.time() - start
             if local_path:
                 print("Downloaded to:", local_path)
-                update_job_stage(conn, job['id'], 'inference', new_status='pending', addons=[f"local_path = '{local_path}'", f"download_time = {download_time:0.2f}"])
-       
+                update_job_stage(conn, job['id'], 'character_detection', new_status='pending', addons=[f"local_path = '{local_path}'", f"download_time = {download_time:0.2f}", f"shot_detection_time = {shot_detection_time:0.2f}"])
+
         except Exception as e:
             print("Download failed for:", s3_key, e)
             mark_job_failed(conn, job['id'])
@@ -48,9 +54,6 @@ while True:
         if debug:
             print("Exiting due to debug mode")
             break
-        
     else:
-        print("Sleeping for 3 mins")
+        print(f"download_stage : sleeping for {sleep_time} seconds")
         time.sleep(sleep_time)
-
-# split_video(video_path, out_dir, split_duration=5, resize_w=640, resize_h=640):

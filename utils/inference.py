@@ -1,6 +1,6 @@
 import re
 import subprocess
-
+from collections import defaultdict
 import json
 import os
 import tempfile
@@ -10,12 +10,13 @@ import pandas as pd
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from google import genai
+from google.genai import types
 from google.genai.types import HttpOptions
 
 
 class VideoFrameAudioContextAnalyzer:
 
-    def __init__(self, project_id: str, location: str = "us-central1", model: str = "gemini-2.0-flash"):
+    def __init__(self, project_id: str = "js-titan-dslabs", location: str = "us-central1", model: str = "gemini-2.0-flash", temperature: float = 1.5):
         """Initialize Gemini client."""
         self.client = genai.Client(
             vertexai=True,
@@ -23,7 +24,29 @@ class VideoFrameAudioContextAnalyzer:
             location=location,
             http_options=HttpOptions(api_version="v1"),
         )
+        
         self.model = model
+        self.temperature = temperature
+        self.generate_content_config = types.GenerateContentConfig(
+                        temperature = self.temperature,
+                        top_p = 0.95,
+                        max_output_tokens = 8192,
+                        response_modalities = ["TEXT"],
+                        safety_settings = [types.SafetySetting(
+                          category="HARM_CATEGORY_HATE_SPEECH",
+                          threshold="OFF"
+                        ),types.SafetySetting(
+                          category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                          threshold="OFF"
+                        ),types.SafetySetting(
+                          category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                          threshold="OFF"
+                        ),types.SafetySetting(
+                          category="HARM_CATEGORY_HARASSMENT",
+                          threshold="OFF"
+                        )],
+                        response_mime_type = "application/json",
+                        )
 
 
     def transcribe_audio(self, audio_path: str) -> str:
@@ -35,7 +58,8 @@ class VideoFrameAudioContextAnalyzer:
                     contents=[{"role": "user", "parts": [
                         {"text": "Please provide an accurate transcript of this audio clip."},
                         {"inline_data": {"mime_type": "audio/wav", "data": f.read()}}
-                    ]}]
+                    ]}], 
+                    config=self.generate_content_config
                 )
             transcript = response.text.strip()
             print(f"🗣️ Transcribed {os.path.basename(audio_path)}")
@@ -58,7 +82,7 @@ class VideoFrameAudioContextAnalyzer:
     def analyze_multimodal_segment(self, frame_paths, audio_path, transcript_text, prompt):
         """Send frames + audio + transcript to Gemini."""
         # print(f"🎬 Analyzing {len(frame_paths)} frames + {os.path.basename(audio_path)} with transcript...")
-        print(frame_paths, audio_path)
+        # print(frame_paths, audio_path)
         parts = [
             {"text": f"{prompt}\n\nHere is the transcript of the segment:\n{transcript_text}"}
         ]
@@ -74,13 +98,26 @@ class VideoFrameAudioContextAnalyzer:
             response = self.client.models.generate_content(
                 model=self.model,
                 contents=[{"role": "user", "parts": parts}],
+                config=self.generate_content_config
             )
             return response.text
         except Exception as e:
             print(f"❌ Gemini analysis failed: {e}")
             return ""
 
-
+    def read_prompts(self, prompts_folder):
+        prompt_list = []
+        prompt_files = sorted(glob.glob(os.path.join(prompts_folder, 'prompt*.txt')))
+        data = {"num_frames": self.chunk_size}
+        for file in prompt_files:
+            print(file)
+            with open(file, 'r') as f:
+                prompt = f.read()
+                formatted_prompt = prompt.format_map(defaultdict(str, {k: str(v) for k, v in data.items()}))
+                print( formatted_prompt)
+            prompt_list.append(formatted_prompt)
+        return prompt_list
+    
     def extract_and_save_json(self, text: str, output_path: str = None) -> dict:
         """Extract valid JSON from model output."""
         start, end = text.find('{'), text.rfind('}')
@@ -91,7 +128,8 @@ class VideoFrameAudioContextAnalyzer:
         try:
             data = json.loads(text[start:end+1])
         except Exception:
-            print("⚠️ Invalid JSON content.")
+            
+            print(f"⚠️ Invalid JSON content: {text}")
             data = {}
 
         if output_path:
@@ -102,22 +140,26 @@ class VideoFrameAudioContextAnalyzer:
 
 
 def get_meta_data(args):
-    output = args["output"]
+    model = args["model"]
     project = args["project"]
     location = args["location"]
-    model = args["model"]
-    audio_dir = args["audio"]
-    annotated_frames_dir = args["frames_annotated"]
-    prompt_dir = args["prompt_folder"]
-    max_workers = args["max_workers"]
+    temperature = args["temperature"]
     chunk_size = args["chunk_size"]
+    max_workers = args["max_workers"]
+    prompt_dir = args["prompt_dir"]
+    output = args["output_dir"]
+
+    audio_dir = os.path.join(output, "audio")
+    annotated_frames_dir = os.path.join(output, "annotated_frames")
+    
+
     movie_name = os.path.basename(output)
 
     os.makedirs(output, exist_ok=True)
     print(f"🗂️ Run output directory: {output}")
 
-    analyzer = VideoFrameAudioContextAnalyzer(project_id=project, location=location, model=model)
-
+    analyzer = VideoFrameAudioContextAnalyzer(project_id=project, location=location, model=model, temperature=temperature)
+    analyzer.chunk_size=chunk_size
     print("🚀 Starting multi-prompt multimodal video analysis...\n")
 
 
@@ -131,16 +173,15 @@ def get_meta_data(args):
         else:
             segments.append((image_files[i * chunk_size: (i+1) * chunk_size], audio_files[i]))
 
-    # segments = [(image_files, audio_path) for audio_path in audio_files]
-
-    prompt_files = sorted(glob.glob(os.path.join(prompt_dir, "prompt*.txt")))
-    if not prompt_files:
-        print("❌ No prompt files found in folder.")
-        return
+    prompt_files = analyzer.read_prompts(prompt_dir)
+    # prompt_files = sorted(glob.glob(os.path.join(prompt_dir, "prompt*.txt")))
+    # if not prompt_files:
+    #     print("❌ No prompt files found in folder.")
+    #     return
     
     # print("🎤 Transcribing all segments in parallel...", len(segments))
     segments = segments[100:110]
-
+    print("🎤 Transcribing all segments in parallel...", len(segments))
     def transcribe_segment(i, audio_path):
         transcript = analyzer.transcribe_audio(audio_path)   # single .aac
         return i, transcript
@@ -162,21 +203,17 @@ def get_meta_data(args):
                 print(f"⚠️ Transcription failed for segment {i}: {e}")
 
 
-        for prompt_path in prompt_files:
-            prompt_name = os.path.splitext(os.path.basename(prompt_path))[0]
-            print(f"\n🧩 Running prompt: {prompt_name}")
-            output_dir = os.path.join(output, prompt_name)
+        for i, prompt in enumerate(prompt_files):
+            # prompt_name = os.path.splitext(os.path.basename(prompt_path))[0]
+            print(f"\n🧩 Running prompt: prompt{i+1}")
+            output_dir = os.path.join(output, "prompt" + str(i+1))
             os.makedirs(output_dir, exist_ok=True)
-
-            with open(prompt_path, "r") as f:
-                base_prompt = f.read()
 
             def process_segment(i, frames, audio):
                 transcript = transcripts.get(i, "")
                 if not transcript:
                     return i, {}
-                seg_prompt = base_prompt.replace("[SEGMENT_INDEX]", str(i))
-                json_text = analyzer.analyze_multimodal_segment(frames, audio, transcript, seg_prompt)
+                json_text = analyzer.analyze_multimodal_segment(frames, audio, transcript, prompt)
                 json_data = analyzer.extract_and_save_json(json_text)   # parse JSON only
                 return i, json_data
 
@@ -205,9 +242,8 @@ def get_meta_data(args):
                 for i in failed:
                     frames, audio = segments[i]
                     try:
-                        seg_prompt = base_prompt.replace("[SEGMENT_INDEX]", str(i))
                         transcript = transcripts.get(i, "")
-                        json_text = analyzer.analyze_multimodal_segment(frames, audio, transcript, seg_prompt)
+                        json_text = analyzer.analyze_multimodal_segment(frames, audio, transcript, prompt)
                         json_data = analyzer.extract_and_save_json(json_text)
                         results[i] = json_data
                         print(f"✔ Retry success → segment {i}")

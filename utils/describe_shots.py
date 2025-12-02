@@ -199,13 +199,15 @@ def make_timestamp_folder(base_dir="output"):
 
 
 def process_shots(
-    shots_json,
-    excel_desc,
-    excel_summary,
     output_dir,
-    prompt_template,
+    prompt_dir,
     max_workers=8,
 ):
+    prompt_template = f"{prompt_dir}/shots_prompt.txt"
+    shots_json=f"{output_dir}/shots.json"
+    excel_desc=f"{output_dir}prompt1_prompt2_merged.xlsx"
+    excel_summary=f"{output_dir}prompt3_prompt4_merged.xlsx"
+
     shot_strings, _ = generate_shot_wise_text(
         shots_json=shots_json,
         excel_desc=excel_desc,
@@ -227,9 +229,9 @@ if __name__ == "__main__":
     import time 
     start_time = time.time()
     output_dir = make_timestamp_folder("output")
-    shots_json="/Users/amana1/working_dir/shot_detection/output/TX_MASTER_FC_Anupamaa_SH4164_S1_E1599_DYN1492441_v2_763507606_900790931_877219001/20251126_110959/json/TX_MASTER_FC_Anupamaa_SH4164_S1_E1599_DYN1492441_v2_763507606_900790931_877219001_scenes.json"
-    excel_desc="/Users/amana1/working_dir/zMetaDataExtraction/output/TX_MASTER_FC_Anupamaa_SH4164_S1_E1599_DYN1492441_v2_763507606_900790931_877219001/2025-11-25_11-56-56/video_analysis/prompt1_prompt2_merged.xlsx"
-    excel_summary="/Users/amana1/working_dir/zMetaDataExtraction/output/TX_MASTER_FC_Anupamaa_SH4164_S1_E1599_DYN1492441_v2_763507606_900790931_877219001/2025-11-25_11-56-56/video_analysis/prompt3_prompt4_merged.xlsx"
+    shots_json=f"{output_dir}/shots.json"
+    excel_desc=f"{output_dir}prompt1_prompt2_merged.xlsx"
+    excel_summary=f"{output_dir}prompt3_prompt4_merged.xlsx"
     shots_prompt = "/Users/amana1/working_dir/Meta_Extraction/prompts/shots_prompt.txt"
     output_file=f"{output_dir}/all_shots.txt"
     

@@ -2,7 +2,7 @@
 PROJECT="js-titan-dslabs"
 LOCATION="us-central1"
 MODEL="gemini-2.5-flash"
-
+TEMPERATURE=0.5
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 LOCAL_VIDEO_DIR = "/Users/amana1/working_dir/videos"
 LOCAL_PROCESSING_DIR = "/Users/amana1/working_dir/Meta_Extraction/out"

@@ -7,7 +7,7 @@ table = PIPELINE_TABLE
 query = f"""
 CREATE TABLE IF NOT EXISTS {table} (
     id SERIAL PRIMARY KEY,
-    stage TEXT CHECK (stage IN ('download', 'inference', 'db_insertion')),
+    stage TEXT CHECK (stage IN ('download', 'inference', 'db_insertion', 'character_detection', 'shot_description', 'scene_detection', 'scene_description')) NOT NULL,
     priority INTEGER NOT NULL,
     s3_key TEXT UNIQUE,
     filename TEXT NOT NULL,
@@ -15,9 +15,17 @@ CREATE TABLE IF NOT EXISTS {table} (
     metadata JSONB DEFAULT NULL,
     local_path TEXT DEFAULT NULL,
     processed_output TEXT DEFAULT NULL,
+
     download_time REAL,
     inference_time REAL,
     db_insertion_time REAL,
+
+    character_detection_time REAL,
+    shot_detection_time REAL,
+    shot_description_time REAL,
+    scene_detection_time REAL,
+    scene_description_time REAL,
+
     infer_logs JSONB,
     status TEXT CHECK (status IN ('pending', 'in_progress', 'done', 'failed')) DEFAULT 'pending',
     updated_at TIMESTAMP DEFAULT NOW()

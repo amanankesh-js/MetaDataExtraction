@@ -18,8 +18,8 @@ Return JSON only in the following format (no additional text):
 
 {{
     "character_names": `list`,
-    "character_appearances": `dict{character_name: character_appearance}`,
-    "character_emotions": `dict{character_name: character_emotion}`,
+    "character_appearances": `dict{{character_name: character_appearance}}`,
+    "character_emotions": `dict{{character_name: character_emotion}}`,
     "shot_summary": "",
     "shot_description": ""
 }}

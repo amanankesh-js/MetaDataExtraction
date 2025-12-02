@@ -38,8 +38,13 @@ def merge_prompt1_prompt2(root, out_name="prompt1_prompt2_merged.xlsx"):
 
     row_list = []
     for seg_name, frames in rows.items():
-        match = re.search(r"\d+", seg_name)
-        chunk_id = f"chunk_{int(match.group()):03d}"
+        match = re.search(r"chunk_(\d+)", seg_name)
+        if match:
+            chunk_id = f"chunk_{int(match.group(1)):03d}"
+        else:
+            raise ValueError(f"Could not extract chunk id from filename: {seg_name}")
+
+        # print("Processing segment:", seg_name, "as", chunk_id, match)
         movie_name = seg_name.replace(chunk_id, "")
         for frame_id, attributes in frames.items():
             entry = dict(attributes)
@@ -87,10 +92,15 @@ def merge_prompt3_prompt4(root, out_name="prompt3_prompt4_merged.xlsx"):
             rows[seg][k] = v
 
     row_list = []
-    for seg, meta_dict in rows.items():
-        match = re.search(r"\d+", seg)
-        chunk_id = f"chunk_{int(match.group()):03d}" if match else seg
-        movie_name = seg.replace(chunk_id, "")
+    for seg_name, meta_dict in rows.items():
+        match = re.search(r"chunk_(\d+)", seg_name)
+        if match:
+            chunk_id = f"chunk_{int(match.group(1)):03d}"
+        else:
+            raise ValueError(f"Could not extract chunk id from filename: {seg_name}")
+        
+        # print("Processing segment:", seg_name, "as", chunk_id)
+        movie_name = seg_name.replace(chunk_id, "")
         row = dict(meta_dict)
         row["movie"] = movie_name
         row["chunk_id"] = chunk_id

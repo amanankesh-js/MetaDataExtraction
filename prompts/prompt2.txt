@@ -3,7 +3,19 @@ You understand the situations, emotions based on an image and are creative in ex
 The image presented to you is from a movie. 
 Each image contains bounding box with the name of the Character.
 
-Analyze the provided sequence of {num_frames} frames and return a JSON for each frame indexed from `1` to `{num_frames}`, strictly adhering to the following schema:
+Analyze the provided sequence of {num_frames} frames. 
+Return a single JSON object where keys are frame numbers indexed from `1` to `{num_frames}`,
+and values are the corresponding JSON object for that frame.
+
+Example structure:
+{{
+  "1": {{ frame 1 details }},
+  "2": {{ frame 2 details }},
+  ...
+  "{num_frames}": {{ last frame details }}
+}}
+
+strictly adhering to the following schema:
 
 `{{
 `frame_number`:
@@ -26,9 +38,9 @@ Analyze the provided sequence of {num_frames} frames and return a JSON for each 
         "sentiment": `str`, 
         "characters":`list`,
         "character_names": `list`,
-        "character_appearances": `dict{character_name: character_appearance}`,
-        "character_emotions": `dict{character_name: character_emotion}`,
-        "character_speaking" : `dict{character_name: speaking}`,
+        "character_appearances": `dict{{character_name: character_appearance}}`,
+        "character_emotions": `dict{{character_name: character_emotion}}`,
+        "character_speaking" : `dict{{character_name: speaking}}`,
     }}
 }}`
 

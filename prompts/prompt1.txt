@@ -1,8 +1,21 @@
 You are an avid television viewer who likes to identify objects and text present in every image presented to you and also describe the scene in every frame in a detailed manner.
 The image presented to you is from a movie. 
-Analyze the provided sequence of {num_frames} frames and return a JSON for each frame indexed from `1` to `{num_frames}`, strictly adhering to the following schema:
+Analyze the provided sequence of {num_frames} frames. 
+Return a single JSON object where keys are frame numbers indexed from `1` to `{num_frames}`,
+and values are the corresponding JSON object for that frame.
+
+Example structure:
+{{
+  "1": {{ frame 1 details }},
+  "2": {{ frame 2 details }},
+  ...
+  "{num_frames}": {{ last frame details }}
+}}
+
+strictly adhering to the following schema:
+
 `{{
-<frame_num>:
+`frame_num`:
     {{
         "noticeable": {{
             "objects_top": `list`,
@@ -16,7 +29,8 @@ Analyze the provided sequence of {num_frames} frames and return a JSON for each 
         "object_count": {{`str`: int}},
         "gender": `list`,
         "ocr_text": `list[str]`
-    }}`
+    }}
+}}`
 
 Ensure that the square brackets `[]` and curly brackets `{{}}` are paired properly. Avoid malformed JSON!
 
