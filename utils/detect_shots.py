@@ -29,10 +29,10 @@ def process_and_split_shots(video_path, output_dir, scene_list, detect_time, tot
                 f"-c copy \"{output_file}\""
             )
             os.system(cmd)
-            print(f"✅ Saved: {output_file.name} ({duration:.2f}s)")
+            print(f"✅ Saved: {output_file} ({duration:.2f}s)")
 
         split_time = time.time() - split_start
-        print(f"\n✅ All scenes saved in: {output_dir.resolve()}")
+        print(f"\n✅ All scenes saved in: {output_dir}")
     else:
         print("⚠️ No scenes detected. Try lowering the threshold (e.g. 25.0 or 20.0).")
         split_time = 0.0
